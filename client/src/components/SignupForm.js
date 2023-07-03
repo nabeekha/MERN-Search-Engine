@@ -9,6 +9,8 @@ const SignupForm = () => {
   const [userFormData, setUserFormData] = useState({ username: '', email: '', password: '' });
   // set state for form validation
   const [validated] = useState(false);
+    // using Apollo useMutation hook
+    const [addUser, { error }] = useMutation(ADD_USER);
   // set state for alert
   const [showAlert, setShowAlert] = useState(false);
 
@@ -27,16 +29,16 @@ const SignupForm = () => {
       event.stopPropagation();
     }
 
+    if (error) {
+      throw new Error("there is an error");
+    }
+
     try {
-      const response = await createUser(userFormData);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const { token, user } = await response.json();
-      console.log(user);
-      Auth.login(token);
+      const { data } = await addUser({
+        variables: { ...userFormData },
+      });
+      Auth.login(data.addUser.token);
+      console.log(data);
     } catch (err) {
       console.error(err);
       setShowAlert(true);
